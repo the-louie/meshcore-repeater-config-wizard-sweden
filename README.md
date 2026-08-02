@@ -1,87 +1,91 @@
-# MeshCore Repeater Config Wizard (Sweden)
+# MeshCore Repeater-konfigurationsguide (Sverige)
 
-A single-page wizard that generates a complete CLI configuration for a Swedish
-[MeshCore](https://meshcore.co.uk/) repeater with as close to zero clicks as
-possible. Click the map, type a name, copy the config. Everything else is
-prefilled with recommended values and can be adjusted if needed.
+> 🇬🇧 English version: [README-en.md](README-en.md)
 
-The UI is in Swedish, and the wizard only accepts placements inside Sweden's
-municipal boundaries.
+En ensidig guide som genererar en komplett CLI-konfiguration för en svensk
+[MeshCore](https://meshcore.co.uk/)-repeater med så nära noll klick som
+möjligt. Klicka på kartan, skriv ett namn, kopiera konfigurationen. Allt annat
+är förifyllt med rekommenderade värden och kan justeras vid behov.
 
-## How it works
+Gränssnittet är på svenska och guiden accepterar bara placeringar innanför
+Sveriges kommungränser.
 
-1. **Plats** – click the map to set the repeater position. The län and kommun
-   are detected automatically with a point-in-polygon lookup against Swedish
-   administrative boundaries, and the region chain (`se`, `se<länskod>`,
-   `se<kommunkod>`, optionally `offgrid`) is derived from it. Positions outside
-   Sweden are rejected.
-2. **Namn** – type a short location name. The prefix is generated automatically
-   in one of two formats, selected with a toggle:
-   - `SE-<IATA>-` based on the county's airport code (default)
-   - `SE<kommunkod>-` based on the selected kommun
-   The full name is validated against the 22-byte advert limit and the
-   characters MeshCore allows.
-3. **Observer (valfritt)** – filling in Wi-Fi credentials switches the config to
-   observer firmware with MQTT reporting. Leaving the fields empty produces a
-   plain repeater config. SSID and password are restricted to printable ASCII
-   without spaces, and an empty password means an open network.
+## Så fungerar det
 
-The generated command list updates live on every change and can be copied in
-full with one click. Commands are pasted into the device console (for example
-via a Web Serial flasher), one at a time, waiting for each response.
+1. **Plats** – klicka på kartan för att sätta repeaterns position. Län och
+   kommun identifieras automatiskt med en punkt-i-polygon-sökning mot Sveriges
+   administrativa gränser, och regionkedjan (`se`, `se<länskod>`,
+   `se<kommunkod>`, eventuellt `offgrid`) härleds från den. Positioner utanför
+   Sverige avvisas.
+2. **Namn** – skriv ett kort platsnamn. Prefixet genereras automatiskt i ett av
+   två format som väljs med en vippknapp:
+   - `SE-<IATA>-` utifrån länets flygplatskod (standard)
+   - `SE<kommunkod>-` utifrån vald kommun
+   Hela namnet valideras mot advert-gränsen på 22 byte och de tecken som
+   MeshCore tillåter.
+3. **Observer (valfritt)** – fylls Wi-Fi-uppgifterna i växlar konfigurationen
+   till observer-firmware med MQTT-rapportering. Lämnas fälten tomma genereras
+   en vanlig repeater-konfiguration. SSID och lösenord är begränsade till
+   utskrivbar ASCII utan mellanslag, och ett tomt lösenord betyder öppet
+   nätverk.
 
-### Defaults
+Kommandolistan uppdateras live vid varje ändring och kan kopieras i sin helhet
+med ett klick. Kommandona klistras in i enhetens konsol (till exempel via en
+Web Serial-flasher), ett i taget, med väntan på svar mellan varje.
 
-| Setting | Value |
+### Standardvärden
+
+| Inställning | Värde |
 | --- | --- |
-| Radio profile | EU/UK Narrow, `869.618 MHz / 62.5 kHz / SF8 / CR8` |
+| Radioprofil | EU/UK Narrow, `869,618 MHz / 62,5 kHz / SF8 / CR8` |
 | Duty cycle | 10 % |
-| Repeater neighbours | 2–4 (`txdelay 0.5`, `direct.txdelay 0.3`) |
-| Identifier length | 3 byte (`path.hash.mode 2`) |
-| Zero-hop adverts | every 4 hours |
-| Flood adverts | every 47 hours |
-| AGC reset interval | 500 |
+| Repeater-grannar | 2–4 (`txdelay 0.5`, `direct.txdelay 0.3`) |
+| Identifierarlängd | 3 byte (`path.hash.mode 2`) |
+| Zero-hop-adverts | var fjärde timme |
+| Flood-adverts | var 47:e timme |
+| AGC-återställningsintervall | 500 |
 | Multi-acks | 1 |
-| RX delay | 0 (disabled) |
-| Timezone | Europe/Stockholm |
+| RX-fördröjning | 0 (avstängd) |
+| Tidszon | Europe/Stockholm |
 
-## Running
+## Körning
 
-The wizard is fully static. Serve the repository root with any web server:
+Guiden är helt statisk. Servera repots rot med valfri webbserver:
 
 ```sh
 python3 -m http.server
-# then open http://localhost:8000
+# öppna sedan http://localhost:8000
 ```
 
-Map tiles are loaded from CARTO at full resolution. Builds that embed a
-low-zoom tile set (see below) probe the tile server first and fall back to the
-embedded tiles only when it is unreachable, so the map keeps working offline.
+Karttiles laddas från CARTO i full upplösning. Byggen som bäddar in ett
+lågzoomat tile-set (se nedan) provar tile-servern först och faller tillbaka på
+de inbäddade tilesen bara när den inte kan nås, så kartan fungerar även
+offline.
 
-## Structure
+## Struktur
 
 ```
-index.html    markup for the two-pane layout (settings left, config right)
-style.css     styling, light/dark theme via prefers-color-scheme
-js/app.js     all logic: map, boundary lookup, validation, command generation
-js/data.js    län and kommun tables (codes and names)
-geojson/      Swedish administrative boundaries (admin_level 4 and 7)
-vendor/       vendored Leaflet 1.9.4
+index.html    markup för tvåkolumnslayouten (inställningar till vänster, konfiguration till höger)
+style.css     styling, ljust/mörkt tema via prefers-color-scheme
+js/app.js     all logik: karta, gränssökning, validering, kommandogenerering
+js/data.js    läns- och kommuntabeller (koder och namn)
+geojson/      Sveriges administrativa gränser (admin_level 4 och 7)
+vendor/       vendorerad Leaflet 1.9.4
 ```
 
-State is persisted in `localStorage` so a reload keeps the selections, except
-Wi-Fi credentials which are deliberately never stored.
+Tillståndet sparas i `localStorage` så att en omladdning behåller valen, med
+undantag för Wi-Fi-uppgifter som medvetet aldrig lagras.
 
-## Development notes
+## Utvecklingsnoteringar
 
-- No build step and no runtime dependencies beyond the vendored Leaflet.
-- `window.__wizardMap` is exposed intentionally so browser tests can convert
-  coordinates to pixels for synthetic map clicks.
-- Open items are tracked in [TODO.md](TODO.md), and review reports live under
-  `__doc/code_reviews/`.
+- Inget byggsteg och inga körtidsberoenden utöver den vendorerade Leaflet.
+- `window.__wizardMap` exponeras avsiktligt så att webbläsartester kan omvandla
+  koordinater till pixlar för syntetiska kartklick.
+- Öppna punkter finns i [TODO.md](TODO.md) och granskningsrapporter ligger
+  under `__doc/code_reviews/`.
 
-## Map data attribution
+## Attribution för kartdata
 
-Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
-contributors, boundaries via [osm-boundaries.com](https://osm-boundaries.com),
-tiles from [CARTO](https://carto.com/).
+Kartdata © [OpenStreetMap](https://www.openstreetmap.org/copyright)-bidragsgivare,
+gränser via [osm-boundaries.com](https://osm-boundaries.com),
+tiles från [CARTO](https://carto.com/).
