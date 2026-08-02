@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MeshCore-repeater · konfigurationsguide</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="vendor/leaflet-1.9.4.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="wizard">
+  <header class="wizard__header">
+    <h1>Repeater-konfiguration</h1>
+    <p>Markera platsen på kartan och ge repeatern ett namn – resten är förifyllt med rekommenderade värden.</p>
+  </header>
+
+  <section class="wizard__settings" aria-label="Inställningar">
+    <fieldset class="wizard__section wizard__section--required">
+      <legend><span class="req-badge">1</span> Plats</legend>
+      <div id="map" class="wizard__map" aria-label="Karta över Sverige. Klicka för att välja plats."></div>
+      <p id="tile-note" class="wizard__alert" hidden>Karttiles kunde inte laddas (blockerade eller offline) – läns- och kommungränserna visas ändå och kartan går att använda.</p>
+      <p id="location-status" class="wizard__hint">Klicka på kartan för att börja.</p>
+      <div class="wizard__location-row" id="location-row" hidden>
+        <span id="location-name" class="wizard__location-name"></span>
+        <span id="location-coords" class="wizard__location-coords"></span>
+        <span class="wizard__region-tags" id="region-tags"></span>
+      </div>
+      <div class="wizard__override" id="location-override" hidden>
+        <label>Län
+          <select id="county"></select>
+        </label>
+        <label>Kommun
+          <select id="municipality"></select>
+        </label>
+      </div>
+      <label class="wizard__check">
+        <input type="checkbox" id="offgrid">
+        Off-grid (sol/batteridrift utan fast el) – lägger till regionen <code>offgrid</code>
+      </label>
+    </fieldset>
+
+    <fieldset class="wizard__section wizard__section--required">
+      <legend><span class="req-badge">2</span> Namn</legend>
+      <div class="wizard__name-row">
+        <div class="rocker" role="radiogroup" aria-label="Prefixtyp">
+          <button type="button" id="mode-iata" class="rocker__option is-active" aria-pressed="true">IATA</button>
+          <button type="button" id="mode-kommun" class="rocker__option" aria-pressed="false">Kommun</button>
+        </div>
+        <div class="wizard__name-input">
+          <span id="name-prefix" class="wizard__prefix">SE-···-</span>
+          <input type="text" id="device-name" placeholder="Plats" autocomplete="off"
+                 spellcheck="false" aria-label="Repeaterns namn (efter prefixet)">
+        </div>
+        <span id="name-count" class="wizard__count">0 / 22 byte</span>
+      </div>
+      <p id="name-feedback" class="wizard__hint">Skriv ett kort platsnamn, t.ex. <em>Djurgarden</em>.</p>
+    </fieldset>
+
+    <fieldset class="wizard__section" id="observer-section">
+      <legend><span class="req-badge req-badge--optional">3</span> Observer-konfiguration
+        <span class="info-tip" tabindex="0" aria-describedby="observer-tooltip">i
+          <span class="info-tip__bubble" role="tooltip" id="observer-tooltip">En observer skickar mesh-trafiken
+            vidare till Meshat.se-kartan via MQTT över Wi-Fi. Fyll i Wi-Fi-uppgifterna bara om repeatern
+            redan är flashad med observer-firmware och har Wi-Fi-täckning på platsen.</span>
+        </span>
+        <small>(valfritt)</small>
+      </legend>
+      <p class="wizard__hint">Lämna fälten tomma för en vanlig repeater.</p>
+      <div class="wizard__observer">
+        <label class="wizard__inline">SSID
+          <input type="text" id="wifi-ssid" autocomplete="off" spellcheck="false" maxlength="32">
+        </label>
+        <label class="wizard__inline">Lösenord
+          <input type="password" id="wifi-password" autocomplete="off" maxlength="63"
+                 placeholder="Lämna tomt för öppna nätverk">
+        </label>
+        <p id="wifi-feedback" class="wizard__hint" data-state="error" hidden></p>
+      </div>
+    </fieldset>
+
+    <fieldset class="wizard__section">
+      <legend>Övriga inställningar <small>(förifyllda – ändra vid behov)</small></legend>
+
+      <div class="wizard__grid">
+        <label>Sändeffekt
+          <select id="txpower">
+            <option value="" selected>Behåll nuvarande värde</option>
+            <option value="22">22 dBm</option>
+            <option value="20">20 dBm</option>
+            <option value="17">17 dBm</option>
+            <option value="14">14 dBm</option>
+          </select>
+        </label>
+
+        <label>Repeater-grannar
+          <select id="neighbors">
+            <option value="">Vet ej</option>
+            <option value="0-1">0–1 granne</option>
+            <option value="2-4" selected>2–4 grannar</option>
+            <option value="5-9">5–9 grannar</option>
+            <option value="10-14">10–14 grannar</option>
+            <option value="15+">15 eller fler</option>
+          </select>
+        </label>
+
+        <label>Identifierarlängd
+          <select id="hashmode">
+            <option value="1">2 byte</option>
+            <option value="2" selected>3 byte (rekommenderas)</option>
+          </select>
+        </label>
+
+        <label>Zero-hop-adverts
+          <select id="zerohop">
+            <option value="0">Avstängt</option>
+            <option value="60">Varje timme</option>
+            <option value="120">Varannan timme</option>
+            <option value="180">Var tredje timme</option>
+            <option value="240" selected>Var fjärde timme</option>
+          </select>
+        </label>
+
+        <label>Flood-adverts (timmar)
+          <input type="number" id="flood" value="47" min="0" max="168" step="1"
+                 title="0 = avstängt, annars 3–168 timmar">
+        </label>
+      </div>
+
+      <details class="wizard__fixed">
+        <summary>Låsta basvärden</summary>
+        <dl>
+          <div><dt>Radioprofil</dt><dd>EU/UK (Narrow) · 869,618 MHz · 62,5 kHz · SF/CR 8/8</dd></div>
+          <div><dt>Duty cycle</dt><dd>10 %</dd></div>
+          <div><dt>AGC-intervall</dt><dd>500</dd></div>
+          <div><dt>Multi-acks</dt><dd>1</dd></div>
+          <div><dt>RX-delay</dt><dd>0 (avstängd)</dd></div>
+          <div><dt>Tidszon</dt><dd>Europe/Stockholm</dd></div>
+        </dl>
+      </details>
+    </fieldset>
+  </section>
+
+  <section class="wizard__result" aria-label="Genererad konfiguration" aria-live="polite">
+    <fieldset class="wizard__section" id="config-section">
+      <legend><span class="req-badge req-badge--status" id="config-badge" aria-hidden="true">🕐</span> Konfiguration</legend>
+      <div id="result-placeholder" class="wizard__placeholder">
+        <p>Gör klart de två obligatoriska valen först.</p>
+        <ol>
+          <li id="todo-map">Markera platsen på kartan</li>
+          <li id="todo-name">Ge repeatern ett namn</li>
+          <li id="todo-observer" hidden>Fyll i giltiga Wi-Fi-uppgifter för observern</li>
+        </ol>
+      </div>
+      <div id="result-output" class="wizard__output" hidden>
+        <button type="button" id="copy-button" class="wizard__copy" title="Kopiera hela konfigurationen" aria-label="Kopiera hela konfigurationen">
+          <svg id="copy-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
+          </svg>
+          <svg id="check-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" hidden>
+            <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/>
+          </svg>
+        </button>
+        <p class="wizard__hint wizard__hint--copy">Kopieringsknappen tar hela konfigurationen. Klistra in i konsolen
+          (MeshCore Flasher) och vänta på svar mellan varje kommando.</p>
+        <ol id="command-list" class="wizard__commands"></ol>
+      </div>
+    </fieldset>
+  </section>
+</main>
+<script src="vendor/leaflet-1.9.4.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
